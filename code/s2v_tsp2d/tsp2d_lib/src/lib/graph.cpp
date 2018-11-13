@@ -11,6 +11,7 @@ Graph::Graph() : num_nodes(0), num_edges(0)
 {
     coor_x.clear();
     coor_y.clear();
+    demands.clear();
     dist.clear();
     adj_set.clear();
 }
@@ -22,19 +23,21 @@ double Graph::euc_dist(const int i, const int j)
     return sqrt(dx * dx + dy * dy);
 }
 
-Graph::Graph(const int _num_nodes, const double* _coor_x, const double* _coor_y)
+Graph::Graph(const int _num_nodes, const double* _coor_x, const double* _coor_y, const double* _demands)
         : num_nodes(_num_nodes)
 {
     coor_x.resize(num_nodes);
     coor_y.resize(num_nodes);
+    demands.resize(num_nodes);
     dist.resize(num_nodes);
     adj_set.resize(num_nodes);
-
+    
     for (int i = 0; i < num_nodes; ++i)
     {
         dist[i].resize(num_nodes);
         coor_x[i] = _coor_x[i];
         coor_y[i] = _coor_y[i];
+        demands[i] = _demands[i];
     }
 
     std::vector< std::pair<int, double> > neighbors;

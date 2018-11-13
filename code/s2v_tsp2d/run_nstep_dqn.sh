@@ -1,6 +1,6 @@
 #!/bin/bash
 
-g_type=clustered
+g_type=vrp
 
 result_root=results/dqn-$g_type
 
@@ -34,7 +34,9 @@ n_step=1
 knn=10
 
 min_n=15
-max_n=20
+#actual number of nodes(+depot)
+#10+1=11
+max_n=11
 
 num_env=1
 mem_size=50000
@@ -52,7 +54,7 @@ fi
 python main.py \
     -net_type $net_type \
     -n_step $n_step \
-    -data_root ../../data/tsp2d \
+    -data_root ../../data/vrp \
     -decay $decay \
     -knn $knn \
     -min_n $min_n \

@@ -12,17 +12,17 @@ public:
     virtual void BuildNet() override;
     virtual void SetupTrain(std::vector<int>& idxes, 
                             std::vector< std::shared_ptr<Graph> >& g_list, 
-                            std::vector< std::vector<int>* >& covered, 
+                            std::vector< IState* >& states, 
                             std::vector<int>& actions, 
                             std::vector<double>& target) override;
                             
     virtual void SetupPredAll(std::vector<int>& idxes, 
                               std::vector< std::shared_ptr<Graph> >& g_list, 
-                              std::vector< std::vector<int>* >& covered) override;
+                              std::vector< IState* >& states) override;
 
     void SetupGraphInput(std::vector<int>& idxes, 
                          std::vector< std::shared_ptr<Graph> >& g_list, 
-                         std::vector< std::vector<int>* >& covered, 
+                         std::vector< IState* >& states, 
                          const int* actions);
 
     SpTensor<CPU, Dtype> act_select, rep_global;

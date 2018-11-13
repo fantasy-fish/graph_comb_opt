@@ -6,6 +6,13 @@
 
 #include "graph.h"
 
+class IState
+{
+public:
+    std::vector<int> action_list;
+    std::vector<double> demands;
+};
+
 class IEnv
 {
 public:
@@ -23,7 +30,7 @@ public:
     double norm;
     std::shared_ptr<Graph> graph;
     
-    std::vector< std::vector<int> > state_seq;
+    std::vector<IState> state_seq;
     std::vector<int> act_seq, action_list;
     std::vector<double> reward_seq, sum_rewards;
 };

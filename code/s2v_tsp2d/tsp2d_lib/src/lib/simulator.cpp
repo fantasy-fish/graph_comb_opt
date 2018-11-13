@@ -7,7 +7,7 @@
 
 std::vector<IEnv*> Simulator::env_list;
 std::vector< std::shared_ptr<Graph> > Simulator::g_list;
-std::vector< std::vector<int>* > Simulator::covered;
+std::vector< IState > Simulator::states;
 std::vector< std::vector<double>* > Simulator::pred;
 
 std::default_random_engine Simulator::generator;
@@ -17,8 +17,8 @@ void Simulator::Init(int num_env)
 {
     env_list.resize(num_env);
     g_list.resize(num_env);
-    covered.resize(num_env);
     pred.resize(num_env);
+    states.resize(num_env);
     for (int i = 0; i < num_env; ++i)
     {
         g_list[i] = nullptr;
@@ -43,7 +43,11 @@ void Simulator::run_simulator(int num_seq, double eps)
                 }
                 env_list[i]->s0(GSetTrain.Sample());
                 g_list[i] = env_list[i]->graph;
-                covered[i] = &(env_list[i]->action_list);
+                IState state;
+                state.action_list = env_list[i]->action_list;
+                state.demands = env_list[i]->graph->demands;
+                states[i] = state;
+                //states[i] = &env_list[i]->state_seq[0];//intial states
             }
         }
 
@@ -52,7 +56,7 @@ void Simulator::run_simulator(int num_seq, double eps)
 
         bool random = false;
         if (distribution(generator) >= eps)
-            Predict(g_list, covered, pred);
+            Predict(g_list, states, pred);
         else        
             random = true;
 

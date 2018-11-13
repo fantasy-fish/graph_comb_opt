@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <signal.h>
+#include <iostream>
 
 using namespace gnn;
 #define inf 2147483647/2
@@ -53,15 +54,19 @@ int Init(const int argc, const char** argv)
     net->BuildNet();
 
     NStepReplayMem::Init(cfg::mem_size);
-    
+
     Simulator::Init(cfg::num_env);
+
     for (int i = 0; i < cfg::num_env; ++i)
         Simulator::env_list[i] = new Tsp2dEnv(cfg::max_n);
+
     test_env = new Tsp2dEnv(cfg::max_n);
 
     list_pred.resize(cfg::batch_size);
     for (int i = 0; i < cfg::batch_size; ++i)
         list_pred[i] = new std::vector<double>(cfg::max_n + 10);
+    std::cout<< "Init complete" << std::endl;
+
     return 0;
 }
 
@@ -71,9 +76,10 @@ int UpdateSnapshot()
     return 0;
 }
 
-int InsertGraph(bool isTest, const int g_id, const int num_nodes, const double* coor_x, const double* coor_y)
+int InsertGraph(bool isTest, const int g_id, const int num_nodes, const double* coor_x, const double* coor_y, 
+    const double* demands)
 {
-    auto g = std::make_shared<Graph>(num_nodes, coor_x, coor_y);
+    auto g = std::make_shared<Graph>(num_nodes, coor_x, coor_y, demands);
     if (isTest)
         GSetTest.InsertGraph(g_id, g);
     else
@@ -121,7 +127,8 @@ double Fit(const double lr)
     return Fit(lr, sample.g_list, sample.list_st, sample.list_at, list_target);
 }
 
-double Tsp2dFarthest(std::shared_ptr<Graph> g, const std::vector<int>& s, const int act)
+/*
+double Tsp2dFarthest(std::shared_ptr<Graph> g, const std::vector<IState>& s, const int act)
 {
     std::vector<bool> used(g->num_nodes);
     for (int i = 0; i < g->num_nodes; ++i)
@@ -202,20 +209,22 @@ double FitWithFarthest(const double lr)
     }
     return Fit(lr, sample.g_list, sample.list_st, sample.list_at, list_target);
 }
+*/
 
 double Test(const int gid)
 {
     std::vector< std::shared_ptr<Graph> > g_list(1);
-    std::vector< std::vector<int>* > states(1);
+    std::vector< IState* > states(1);
 
     test_env->s0(GSetTest.Get(gid));
-    states[0] = &(test_env->action_list);
     g_list[0] = test_env->graph;
 
     double v = 0;
     int new_action;
     while (!test_env->isTerminal())
     {
+        states[0]->demands = test_env->graph->demands;
+        states[0]->action_list = test_env->action_list;
         Predict(g_list, states, list_pred);
         auto& scores = *(list_pred[0]);
         new_action = arg_max(test_env->graph->num_nodes, scores.data());
@@ -227,16 +236,17 @@ double Test(const int gid)
 double GetSol(const int gid, int* sol)
 {
     std::vector< std::shared_ptr<Graph> > g_list(1);
-    std::vector< std::vector<int>* > states(1);
+    std::vector<IState* > states(1);
 
     test_env->s0(GSetTest.Get(gid));
-    states[0] = &(test_env->action_list);
     g_list[0] = test_env->graph;
 
     double v = 0;
     int new_action;
     while (!test_env->isTerminal())
     {
+        states[0]->demands = test_env->graph->demands;
+        states[0]->action_list = test_env->action_list;
         Predict(g_list, states, list_pred);
         auto& scores = *(list_pred[0]);
         new_action = arg_max(test_env->graph->num_nodes, scores.data());

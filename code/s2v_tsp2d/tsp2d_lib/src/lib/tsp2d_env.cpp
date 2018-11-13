@@ -18,8 +18,13 @@ void Tsp2dEnv::s0(std::shared_ptr<Graph> _g)
     action_list.clear();
     action_list.push_back(0);
     partial_set.insert(0);
+    assert(graph->demands[0]==1);
 
     state_seq.clear();
+    IState state;
+    state.action_list = action_list;
+    state.demands = graph->demands;
+    state_seq.push_back(state);
     act_seq.clear();
     reward_seq.clear();
     sum_rewards.clear();
@@ -27,11 +32,25 @@ void Tsp2dEnv::s0(std::shared_ptr<Graph> _g)
 
 double Tsp2dEnv::step(int a)
 {
-    assert(graph);
-    assert(partial_set.count(a) == 0);
-    assert(a > 0 && a < graph->num_nodes);
-
-    state_seq.push_back(action_list);
+    if (a>0)
+    {
+        assert(graph);
+        assert(partial_set.count(a) == 0);
+        assert(a > 0 && a < graph->num_nodes);
+        graph->demands[0] -= graph->demands[a];
+        assert(graph->demands[0]>=0);
+        graph->demands[a] = 0;
+    }
+    else
+    {
+        assert(a==0);
+        graph->demands[0] = 1;
+    }
+    //state_seq.push_back(action_list);
+    IState state;
+    state.demands = graph->demands;
+    state.action_list = action_list;
+    state_seq.push_back(state);
     act_seq.push_back(a);
 
     double r_t = add_node(a);
@@ -46,11 +65,19 @@ int Tsp2dEnv::randomAction()
 {
     assert(graph);
     avail_list.clear();
+    if(graph->demands[0]!=1)
+        avail_list.push_back(0);
+    if(graph->demands[0]>0 && graph->demands[0]<1)
+    {
+        for(int i = 1; i < graph->num_nodes; ++i)
+        {
+            if(graph->demands[i]!=0 && graph->demands[0]>graph->demands[i])
+                avail_list.push_back(i);
+            if(graph->demands[i]==0)
+                assert(partial_set.count(i)!=0);
+        }
+    }
 
-    for (int i = 0; i < graph->num_nodes; ++i)
-        if (partial_set.count(i) == 0)
-            avail_list.push_back(i);
-    
     assert(avail_list.size());
     int idx = rand() % avail_list.size();
     return avail_list[idx];
@@ -59,7 +86,7 @@ int Tsp2dEnv::randomAction()
 bool Tsp2dEnv::isTerminal()
 {
     assert(graph);
-    return ((int)action_list.size() == graph->num_nodes);
+    return ((int)partial_set.size() == graph->num_nodes);
 }
 
 double Tsp2dEnv::add_node(int new_node)

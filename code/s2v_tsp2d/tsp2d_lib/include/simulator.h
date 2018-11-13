@@ -4,6 +4,7 @@
 #include <vector>
 #include <random>
 #include "graph.h"
+#include "i_env.h"
 
 int arg_max(int n, const double* scores);
 int arg_min(int n, const double* scores);
@@ -21,7 +22,7 @@ public:
 
     static std::vector<IEnv*> env_list;
     static std::vector< std::shared_ptr<Graph> > g_list;
-    static std::vector< std::vector<int>* > covered;
+    static std::vector< IState > states;
     static std::vector< std::vector<double>* > pred;
 
     static std::default_random_engine generator;

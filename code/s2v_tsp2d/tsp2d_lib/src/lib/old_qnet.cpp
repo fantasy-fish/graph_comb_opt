@@ -106,35 +106,40 @@ void OldQNet::BuildNet()
 
 void OldQNet::SetupGraphInput(std::vector<int>& idxes, 
                            std::vector< std::shared_ptr<Graph> >& g_list, 
-                           std::vector< std::vector<int>* >& covered, 
+                           std::vector< IState* >& states, 
                            const int* actions)
 {
     list_set.resize(idxes.size());
     for (size_t i = 0; i < idxes.size(); ++i)
         list_set[i].clear();
 
-	int node_cnt = 0, edge_cnt = 0;
+    int node_cnt = 0, edge_cnt = 0;
     for (size_t i = 0; i < idxes.size(); ++i)
     {
         auto& g = g_list[idxes[i]];
         node_cnt += g->num_nodes;
 
         auto& c = list_set[i];
-        auto& cur_cover = *(covered[idxes[i]]);
-        for (auto& n_c : cur_cover)
-            c.insert(n_c);
+        std::vector<double>& cur_demands = states[idxes[i]]->demands;
+        for (std::vector<double>::iterator it=cur_demands.begin()+1;it!=cur_demands.end();it++)
+        {
+            if(*it==0)
+                c.insert(it-cur_demands.begin());//skip the depot node
+        }
+        c.insert(0);
 
         edge_cnt += g->num_edges;
 
-        if (cur_cover.size() == 1)
+        if (c.size() == 1)
             continue;
 
-        for (auto& n_c : cur_cover)
+        for (auto& n_c : c)
         {
             for (auto& p : g->adj_set[n_c])
                 if (c.count(p))
                     edge_cnt--;
         }
+        std::vector<int>& cur_cover = states[idxes[i]]->action_list;
         edge_cnt += cur_cover.size() * 2;
     }
 
@@ -157,17 +162,18 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
     edge_cnt = 0;
     size_t edge_offset = 0;
     for (size_t i = 0; i < idxes.size(); ++i)
-	{                
+    {                
         auto& g = g_list[idxes[i]];
         auto& c = list_set[i];
-
-        for (size_t j = 0; j < covered[idxes[i]]->size(); ++j)
+        auto& d = states[idxes[i]]->demands;
+        //auto& a = states[idxes[i]]->action_list;
+        for (size_t j = 0; j < d.size(); ++j)
         {
-            auto& cc = *(covered[idxes[i]]);
-            int n_c = cc[j];
-            node_feat.data->ptr[cfg::node_dim * (node_cnt + n_c) + 4] = 0.0;
-            if (n_c == 0)
-                node_feat.data->ptr[cfg::node_dim * (node_cnt + n_c) + 3] = 0.0;
+            node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 2] = d[j];//demands
+            if(d[0]==1)
+                node_feat.data->ptr[cfg::node_dim * (node_cnt + 0) + 4] = 0;
+            if(j>=1 && d[j]>d[0])
+                node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 4] = 0;
         }
             
         for (int j = 0; j < g->num_nodes; ++j)
@@ -175,7 +181,7 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
             int x = node_cnt + j;
             graph.AddNode(i, x);
             if (j == 0)
-                node_feat.data->ptr[cfg::node_dim * x + 2] = 0.0;
+                node_feat.data->ptr[cfg::node_dim * x + 3] = 0.0;
             node_feat.data->ptr[cfg::node_dim * x] = g->coor_x[j];
             node_feat.data->ptr[cfg::node_dim * x + 1] = g->coor_y[j];
             for (auto& p : g->adj_set[j])
@@ -198,9 +204,9 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
                 rep_global.data->col_idx[node_cnt + j] = i;
             }
         }
-        if ((int)covered[idxes[i]]->size() > 1)
+        if ((int)states[idxes[i]]->action_list.size() > 1)
         {
-            auto& cur_cover = *(covered[idxes[i]]);
+            auto& cur_cover = states[idxes[i]]->action_list;
             for (int j = 0; j < (int)cur_cover.size(); ++j)
             {
                 int n_c = cur_cover[j];
@@ -234,7 +240,7 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
             act_select.data->col_idx[i] = node_cnt + act;
         }
         node_cnt += g->num_nodes;
-	}
+    }
     assert(edge_offset == edge_feat.shape.Count());
     assert(edge_cnt == (int)graph.num_edges);
     assert(node_cnt == (int)graph.num_nodes);
@@ -253,11 +259,11 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
 
 void OldQNet::SetupTrain(std::vector<int>& idxes, 
                       std::vector< std::shared_ptr<Graph> >& g_list, 
-                      std::vector< std::vector<int>* >& covered, 
+                      std::vector< IState* >& states,  
                       std::vector<int>& actions, 
                       std::vector<double>& target)
 {    
-    SetupGraphInput(idxes, g_list, covered, actions.data());
+    SetupGraphInput(idxes, g_list, states, actions.data());
 
     y.Reshape({idxes.size(), (size_t)1});
     for (size_t i = 0; i < idxes.size(); ++i)
@@ -267,7 +273,7 @@ void OldQNet::SetupTrain(std::vector<int>& idxes,
 
 void OldQNet::SetupPredAll(std::vector<int>& idxes, 
                         std::vector< std::shared_ptr<Graph> >& g_list, 
-                        std::vector< std::vector<int>* >& covered)
+                        std::vector< IState* >& states)
 {    
-    SetupGraphInput(idxes, g_list, covered, nullptr);
+    SetupGraphInput(idxes, g_list, states, nullptr);
 }
