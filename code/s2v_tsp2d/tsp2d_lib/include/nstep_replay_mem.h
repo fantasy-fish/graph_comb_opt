@@ -13,7 +13,7 @@ class ReplaySample
 public:
 
     std::vector< std::shared_ptr<Graph> > g_list;
-    std::vector< IState* > list_st, list_s_primes;
+    std::vector< std::shared_ptr<IState> > list_st, list_s_primes;
     std::vector<int> list_at;
     std::vector<double> list_rt;
     std::vector<bool> list_term;

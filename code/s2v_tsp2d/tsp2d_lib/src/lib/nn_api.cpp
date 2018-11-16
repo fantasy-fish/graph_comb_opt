@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <signal.h>
+#include <iostream>
 using namespace gnn;
 
 #define inf 2147483647/2
@@ -14,8 +15,9 @@ INet* net = nullptr;
 
 std::vector<int> batch_idxes;
 
-void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< IState* >& states, std::vector< std::vector<double>* >& pred)
+void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector< std::vector<double>* >& pred)
 {
+    //std::cout<<"prediction begins"<<std::endl;
     DTensor<CPU, Dtype> output;
     int n_graphs = g_list.size();
     for (int i = 0; i < n_graphs; i += cfg::batch_size)
@@ -44,17 +46,13 @@ void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< IState*
                 pos += 1;
             }
             //masking            
-            std::vector<double> cur_demands(states[j]->demands[j]);
+            std::vector<double> cur_demands(states[j]->demands);
             if(cur_demands[0]==1)
                 cur_pred[0] = -inf;
-            else
+            for (int k = 1; k < g->num_nodes; ++k)
             {
-                assert(g->num_nodes==(int)cur_demands.size());
-                for (int k = 1; k < g->num_nodes; ++k)
-                {
-                    if (cur_demands[k]==0 || cur_demands[k]>cur_demands[0])
-                        cur_pred[k] = -inf;
-                }
+                if (cur_demands[k]==0 || cur_demands[k]>cur_demands[0])
+                    cur_pred[k] = -inf;
             }
             
         }
@@ -62,14 +60,14 @@ void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< IState*
     }   
 }
 
-void PredictWithSnapshot(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< IState* >& states, std::vector< std::vector<double>* >& pred)
+void PredictWithSnapshot(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector< std::vector<double>* >& pred)
 {
     net->UseOldModel();
     Predict(g_list, states, pred);
     net->UseNewModel();
 }
 
-double Fit(const double lr, std::vector< std::shared_ptr<Graph> >& g_list, std::vector< IState* >& states, std::vector<int>& actions, std::vector<double>& target)
+double Fit(const double lr, std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector<int>& actions, std::vector<double>& target)
 {   
     //covered is states
     Dtype loss = 0;

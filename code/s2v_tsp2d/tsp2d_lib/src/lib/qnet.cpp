@@ -116,7 +116,7 @@ void QNet::BuildNet()
 
 void QNet::SetupGraphInput(std::vector<int>& idxes, 
                            std::vector< std::shared_ptr<Graph> >& g_list, 
-                           std::vector< IState* >& states, 
+                           std::vector< std::shared_ptr<IState> >& states, 
                            const int* actions)
 {
     list_set.resize(idxes.size());
@@ -150,7 +150,12 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
                     edge_cnt--;
         }
         std::vector<int>& cur_cover = states[idxes[i]]->action_list;
-        edge_cnt += cur_cover.size() * 2;
+        //if the last node isn't depot, add an edge between depot and the last node
+        int last_node =cur_cover[cur_cover.size()-1];
+        if(last_node==cur_cover[0])
+            edge_cnt += (cur_cover.size()-1) * 2;
+        else
+            edge_cnt += cur_cover.size() * 2;
     }
 
     graph.Resize(idxes.size(), node_cnt);
@@ -182,7 +187,7 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
             node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 2] = d[j];//demands
             if(d[0]==1)
                 node_feat.data->ptr[cfg::node_dim * (node_cnt + 0) + 4] = 0;
-            if(j>=1 && d[j]>d[0])
+            if(j>=1 && (d[j]>d[0]||d[j]==0))
                 node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 4] = 0;
         }
             
@@ -217,7 +222,13 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
         if ((int)states[idxes[i]]->action_list.size() > 1)
         {
             auto& cur_cover = states[idxes[i]]->action_list;
-            for (int j = 0; j < (int)cur_cover.size(); ++j)
+            int last_node = cur_cover[cur_cover.size()-1];
+            int tour_length;
+            if(last_node==cur_cover[0])
+                tour_length = (int)cur_cover.size()-1;
+            else
+                tour_length = (int)cur_cover.size();
+            for (int j = 0; j < tour_length; ++j)
             {
                 int n_c = cur_cover[j];
                 int next_c = cur_cover[0];
@@ -251,6 +262,13 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
         }
         node_cnt += g->num_nodes;
 	}
+    //std::cout<<"edge_cnt: "<<edge_cnt<<std::endl;
+    //std::cout<<"number of edges: "<<(int)graph.num_edges<<std::endl;
+    // std::cout<<"node_cnt: "<<node_cnt<<std::endl;
+    // std::cout<<"number of nodes: "<<(int)graph.num_nodes<<std::endl;
+    //std::cout<<"edge_offset: "<<edge_offset<<std::endl;
+    //std::cout<<"edge_feat_shape: "<<edge_feat.shape.Count()<<std::endl;
+    //wrong calculation of edge_feat dim
     assert(edge_offset == edge_feat.shape.Count());
     assert(edge_cnt == (int)graph.num_edges);
     assert(node_cnt == (int)graph.num_nodes);
@@ -269,7 +287,7 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
 
 void QNet::SetupTrain(std::vector<int>& idxes, 
                       std::vector< std::shared_ptr<Graph> >& g_list, 
-                      std::vector< IState* >& states, 
+                      std::vector< std::shared_ptr<IState> >& states, 
                       std::vector<int>& actions, 
                       std::vector<double>& target)
 {    
@@ -283,7 +301,7 @@ void QNet::SetupTrain(std::vector<int>& idxes,
 
 void QNet::SetupPredAll(std::vector<int>& idxes, 
                         std::vector< std::shared_ptr<Graph> >& g_list, 
-                        std::vector< IState* >& states)
+                        std::vector< std::shared_ptr<IState> >& states)
 {    
     SetupGraphInput(idxes, g_list, states, nullptr);
 }

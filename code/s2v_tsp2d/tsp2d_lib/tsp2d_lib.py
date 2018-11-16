@@ -9,14 +9,13 @@ class Tsp2dLib(object):
     def __init__(self, args):
         dir_path = os.path.dirname(os.path.realpath(__file__))        
         self.lib = ctypes.CDLL('%s/build/dll/libtsp2d.so' % dir_path)
-        print self.lib
         self.lib.Fit.restype = ctypes.c_double
         self.lib.Test.restype = ctypes.c_double
         self.lib.GetSol.restype = ctypes.c_double
         arr = (ctypes.c_char_p * len(args))()
         arr[:] = args
         self.lib.Init(len(args), arr)
-        print "python Init complete!"
+        #print "python Init complete"
         self.ngraph_train = 0
         self.ngraph_test = 0
 

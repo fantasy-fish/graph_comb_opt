@@ -106,7 +106,7 @@ void OldQNet::BuildNet()
 
 void OldQNet::SetupGraphInput(std::vector<int>& idxes, 
                            std::vector< std::shared_ptr<Graph> >& g_list, 
-                           std::vector< IState* >& states, 
+                           std::vector< std::shared_ptr<IState> >& states, 
                            const int* actions)
 {
     list_set.resize(idxes.size());
@@ -259,7 +259,7 @@ void OldQNet::SetupGraphInput(std::vector<int>& idxes,
 
 void OldQNet::SetupTrain(std::vector<int>& idxes, 
                       std::vector< std::shared_ptr<Graph> >& g_list, 
-                      std::vector< IState* >& states,  
+                      std::vector< std::shared_ptr<IState> >& states,  
                       std::vector<int>& actions, 
                       std::vector<double>& target)
 {    
@@ -273,7 +273,7 @@ void OldQNet::SetupTrain(std::vector<int>& idxes,
 
 void OldQNet::SetupPredAll(std::vector<int>& idxes, 
                         std::vector< std::shared_ptr<Graph> >& g_list, 
-                        std::vector< IState* >& states)
+                        std::vector< std::shared_ptr<IState> >& states)
 {    
     SetupGraphInput(idxes, g_list, states, nullptr);
 }

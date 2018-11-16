@@ -7,7 +7,7 @@
 
 std::vector<IEnv*> Simulator::env_list;
 std::vector< std::shared_ptr<Graph> > Simulator::g_list;
-std::vector< IState > Simulator::states;
+std::vector< std::shared_ptr<IState> > Simulator::states;
 std::vector< std::vector<double>* > Simulator::pred;
 
 std::default_random_engine Simulator::generator;
@@ -30,6 +30,7 @@ void Simulator::run_simulator(int num_seq, double eps)
 {
     int num_env = env_list.size();    
     int n = 0;
+    
     while (n < num_seq)
     {
         for (int i = 0; i < num_env; ++i)
@@ -41,18 +42,22 @@ void Simulator::run_simulator(int num_seq, double eps)
                     n++;
                     NStepReplayMem::Add(env_list[i]);
                 }
+                //std::cout<<"go into this function"<<std::endl;
                 env_list[i]->s0(GSetTrain.Sample());
+                //std::cout<<"go out of this function"<<std::endl;
                 g_list[i] = env_list[i]->graph;
-                IState state;
-                state.action_list = env_list[i]->action_list;
-                state.demands = env_list[i]->graph->demands;
+                //std::cout<<env_list[i]->demands[0]<<std::endl;
+                auto state = std::make_shared<IState>(env_list[i]->action_list,env_list[i]->demands);
                 states[i] = state;
                 //states[i] = &env_list[i]->state_seq[0];//intial states
             }
         }
 
         if (n >= num_seq)
+        {
+            //std::cout<<"Simulator ends"<<std::endl;
             break;            
+        }
 
         bool random = false;
         if (distribution(generator) >= eps)

@@ -73,6 +73,7 @@ int Init(const int argc, const char** argv)
 int UpdateSnapshot()
 {
     net->old_model.DeepCopyFrom(net->model);
+    //std::cout<<"snapshot complete"<<std::endl;
     return 0;
 }
 
@@ -114,6 +115,7 @@ double Fit(const double lr)
     if (ness)
         PredictWithSnapshot(sample.g_list, sample.list_s_primes, list_pred);
     
+    //std::cout<<"Fit"<<std::endl;
     list_target.resize(cfg::batch_size);
     for (int i = 0; i < cfg::batch_size; ++i)
     {
@@ -214,20 +216,28 @@ double FitWithFarthest(const double lr)
 double Test(const int gid)
 {
     std::vector< std::shared_ptr<Graph> > g_list(1);
-    std::vector< IState* > states(1);
+    std::vector< std::shared_ptr<IState> > states(1);
+
+    //std::cout<<"Test"<<std::endl;
 
     test_env->s0(GSetTest.Get(gid));
     g_list[0] = test_env->graph;
+    assert(g_list[0]->demands[0]==1);
+    states[0] = std::make_shared<IState>();//initialize the pointer
 
     double v = 0;
     int new_action;
     while (!test_env->isTerminal())
     {
-        states[0]->demands = test_env->graph->demands;
+        states[0]->demands = test_env->demands;
         states[0]->action_list = test_env->action_list;
+        //states[0]->set(test_env->action_list,test_env->demands);
         Predict(g_list, states, list_pred);
         auto& scores = *(list_pred[0]);
+        //for(int i=0;i<g_list[0]->num_nodes;i++)
+        //    std::cout<<"node "<<i<<':'<<scores.data()[i]<<std::endl;
         new_action = arg_max(test_env->graph->num_nodes, scores.data());
+        //std::cout<<"action: "<<new_action<<std::endl;
         v += test_env->step(new_action) * cfg::max_n;
     }
     return v;
@@ -236,16 +246,18 @@ double Test(const int gid)
 double GetSol(const int gid, int* sol)
 {
     std::vector< std::shared_ptr<Graph> > g_list(1);
-    std::vector<IState* > states(1);
+    std::vector< std::shared_ptr<IState> > states(1);
 
     test_env->s0(GSetTest.Get(gid));
     g_list[0] = test_env->graph;
-
+    assert(g_list[0]->demands[0]==1);
+    states[0] = std::make_shared<IState>();//initialize the pointer
+    
     double v = 0;
     int new_action;
     while (!test_env->isTerminal())
     {
-        states[0]->demands = test_env->graph->demands;
+        states[0]->demands = test_env->demands;
         states[0]->action_list = test_env->action_list;
         Predict(g_list, states, list_pred);
         auto& scores = *(list_pred[0]);

@@ -60,7 +60,8 @@ void NStepReplayMem::Add(IEnv* env)
     assert(env->isTerminal());
     int num_steps = env->state_seq.size();
     assert(num_steps);
-    assert((num_steps+1) == (int)env->action_list.size());
+    assert(num_steps+1 == (int)env->action_list.size());
+    assert(num_steps == (int)env->sum_rewards.size());
 
     env->sum_rewards[num_steps - 1] = env->reward_seq[num_steps - 1];
     for (int i = num_steps - 1; i >= 0; --i)
@@ -104,10 +105,15 @@ void NStepReplayMem::Sampling(int batch_size, ReplaySample& result)
     {
         int idx = dist(generator) % count;
         result.g_list[i] = graphs[idx];
-        result.list_st[i] = &(states[idx]);
         result.list_at[i] = actions[idx];
         result.list_rt[i] = rewards[idx];
-        result.list_s_primes[i] = &(s_primes[idx]);
         result.list_term[i] = terminals[idx];
+        //result.list_st[i] = &(states[idx]);
+        //result.list_s_primes[i] = &(s_primes[idx]);
+        auto st = std::make_shared<IState>(states[idx]);
+        result.list_st[i] = st;
+        auto s_prime = std::make_shared<IState>(s_primes[idx]);
+        result.list_s_primes[i] = s_prime;
+
     }
 }

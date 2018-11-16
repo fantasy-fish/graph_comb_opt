@@ -22,7 +22,7 @@ public:
 
     static std::vector<IEnv*> env_list;
     static std::vector< std::shared_ptr<Graph> > g_list;
-    static std::vector< IState > states;
+    static std::vector< std::shared_ptr<IState >> states;
     static std::vector< std::vector<double>* > pred;
 
     static std::default_random_engine generator;
