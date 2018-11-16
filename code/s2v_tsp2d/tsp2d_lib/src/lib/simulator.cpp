@@ -42,14 +42,16 @@ void Simulator::run_simulator(int num_seq, double eps)
                     n++;
                     NStepReplayMem::Add(env_list[i]);
                 }
-                //std::cout<<"go into this function"<<std::endl;
                 env_list[i]->s0(GSetTrain.Sample());
-                //std::cout<<"go out of this function"<<std::endl;
                 g_list[i] = env_list[i]->graph;
-                //std::cout<<env_list[i]->demands[0]<<std::endl;
+            }
+            int n_states = (int)env_list[i]->state_seq.size();
+            if(n_states>0)
+                states[i] = std::make_shared<IState>(env_list[i]->state_seq[n_states-1]);
+            else
+            {
                 auto state = std::make_shared<IState>(env_list[i]->action_list,env_list[i]->demands);
                 states[i] = state;
-                //states[i] = &env_list[i]->state_seq[0];//intial states
             }
         }
 
@@ -72,6 +74,7 @@ void Simulator::run_simulator(int num_seq, double eps)
                 a_t = env_list[i]->randomAction();
             else 
                 a_t = arg_max(env_list[i]->graph->num_nodes, pred[i]->data());
+            //std::cout << a_t<<std::endl;
             env_list[i]->step(a_t);            
         }
     }

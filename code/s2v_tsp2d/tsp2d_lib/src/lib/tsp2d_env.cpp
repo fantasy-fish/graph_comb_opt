@@ -22,10 +22,8 @@ void Tsp2dEnv::s0(std::shared_ptr<Graph> _g)
     demands = graph->demands;
     assert(demands.size());
     assert(demands[0]==1);
+    
     state_seq.clear();
-    //IState state(action_list,graph->demands);
-    //state_seq.push_back(state);
-
     act_seq.clear();
     reward_seq.clear();
     sum_rewards.clear();
