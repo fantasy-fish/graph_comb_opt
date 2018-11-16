@@ -97,10 +97,10 @@ if __name__ == '__main__':
     api.TakeSnapshot()
 
     eps_start = 1.0
-    eps_end = 1.0
+    eps_end = 0.05
 
     eps_step = 10000.0
-    sign = -1
+    sign = 1
     api.lib.SetSign(sign)
 
     lr = float(opt['learning_rate'])
