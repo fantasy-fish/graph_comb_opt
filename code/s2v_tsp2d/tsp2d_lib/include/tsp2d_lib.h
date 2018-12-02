@@ -3,7 +3,8 @@
 
 extern "C" int Init(const int argc, const char** argv);
 
-extern "C" int InsertGraph(bool isTest, const int g_id, const int num_nodes, const double* coor_x, const double* coor_y);
+extern "C" int InsertGraph(bool isTest, const int g_id, const int num_nodes, const double* coor_x, const double* coor_y, 
+	const double* demands);
 
 extern "C" int LoadModel(const char* filename);
 

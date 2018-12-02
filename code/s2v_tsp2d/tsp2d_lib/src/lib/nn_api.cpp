@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <signal.h>
+#include <iostream>
 using namespace gnn;
 
 #define inf 2147483647/2
@@ -14,8 +15,9 @@ INet* net = nullptr;
 
 std::vector<int> batch_idxes;
 
-void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::vector<int>* >& covered, std::vector< std::vector<double>* >& pred)
+void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector< std::vector<double>* >& pred)
 {
+    //std::cout<<"prediction begins"<<std::endl;
     DTensor<CPU, Dtype> output;
     int n_graphs = g_list.size();
     for (int i = 0; i < n_graphs; i += cfg::batch_size)
@@ -27,7 +29,7 @@ void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::ve
         for (int j = i; j < i + bsize; ++j)
             batch_idxes[j - i] = j;
         
-        net->SetupPredAll(batch_idxes, g_list, covered);
+        net->SetupPredAll(batch_idxes, g_list, states);//demands
         net->fg.FeedForward({net->q_on_all}, net->inputs, Phase::TEST);
         auto& raw_output = net->q_on_all->value;
         output.CopyFrom(raw_output);
@@ -42,24 +44,32 @@ void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::ve
             {
                 cur_pred[k] = output.data->ptr[pos];
                 pos += 1;
-            }            
-            auto& cur_covered = *(covered[j]);
-            for (auto& k : cur_covered)
-                cur_pred[k] = -inf;
+            }
+            //masking            
+            std::vector<double> cur_demands(states[j]->demands);
+            if(cur_demands[0]==1)
+                cur_pred[0] = -inf;
+            for (int k = 1; k < g->num_nodes; ++k)
+            {
+                if (cur_demands[k]==0 || cur_demands[k]>cur_demands[0])
+                    cur_pred[k] = -inf;
+            }
+            
         }
         ASSERT(pos == (int)output.shape.Count(), "idxes not match");
     }   
 }
 
-void PredictWithSnapshot(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::vector<int>* >& covered, std::vector< std::vector<double>* >& pred)
+void PredictWithSnapshot(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector< std::vector<double>* >& pred)
 {
     net->UseOldModel();
-    Predict(g_list, covered, pred);
+    Predict(g_list, states, pred);
     net->UseNewModel();
 }
 
-double Fit(const double lr, std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::vector<int>* >& covered, std::vector<int>& actions, std::vector<double>& target)
+double Fit(const double lr, std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::shared_ptr<IState> >& states, std::vector<int>& actions, std::vector<double>& target)
 {   
+    //covered is states
     Dtype loss = 0;
     int n_graphs = g_list.size();
     for (int i = 0; i < n_graphs; i += cfg::batch_size)
@@ -72,7 +82,7 @@ double Fit(const double lr, std::vector< std::shared_ptr<Graph> >& g_list, std::
         for (int j = i; j < i + bsize; ++j)
             batch_idxes[j - i] = j;
 
-        net->SetupTrain(batch_idxes, g_list, covered, actions, target);
+        net->SetupTrain(batch_idxes, g_list, states, actions, target);
         net->fg.FeedForward({net->loss}, net->inputs, Phase::TRAIN);
         net->fg.BackPropagate({net->loss});
         net->learner->cur_lr = lr;

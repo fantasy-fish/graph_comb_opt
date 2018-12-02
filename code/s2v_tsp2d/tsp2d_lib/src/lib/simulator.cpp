@@ -7,7 +7,7 @@
 
 std::vector<IEnv*> Simulator::env_list;
 std::vector< std::shared_ptr<Graph> > Simulator::g_list;
-std::vector< std::vector<int>* > Simulator::covered;
+std::vector< std::shared_ptr<IState> > Simulator::states;
 std::vector< std::vector<double>* > Simulator::pred;
 
 std::default_random_engine Simulator::generator;
@@ -17,8 +17,8 @@ void Simulator::Init(int num_env)
 {
     env_list.resize(num_env);
     g_list.resize(num_env);
-    covered.resize(num_env);
     pred.resize(num_env);
+    states.resize(num_env);
     for (int i = 0; i < num_env; ++i)
     {
         g_list[i] = nullptr;
@@ -30,6 +30,7 @@ void Simulator::run_simulator(int num_seq, double eps)
 {
     int num_env = env_list.size();    
     int n = 0;
+    
     while (n < num_seq)
     {
         for (int i = 0; i < num_env; ++i)
@@ -43,16 +44,26 @@ void Simulator::run_simulator(int num_seq, double eps)
                 }
                 env_list[i]->s0(GSetTrain.Sample());
                 g_list[i] = env_list[i]->graph;
-                covered[i] = &(env_list[i]->action_list);
+            }
+            int n_states = (int)env_list[i]->state_seq.size();
+            if(n_states>0)
+                states[i] = std::make_shared<IState>(env_list[i]->state_seq[n_states-1]);
+            else
+            {
+                auto state = std::make_shared<IState>(env_list[i]->action_list,env_list[i]->demands);
+                states[i] = state;
             }
         }
 
         if (n >= num_seq)
+        {
+            //std::cout<<"Simulator ends"<<std::endl;
             break;            
+        }
 
         bool random = false;
         if (distribution(generator) >= eps)
-            Predict(g_list, covered, pred);
+            Predict(g_list, states, pred);
         else        
             random = true;
 
@@ -63,6 +74,7 @@ void Simulator::run_simulator(int num_seq, double eps)
                 a_t = env_list[i]->randomAction();
             else 
                 a_t = arg_max(env_list[i]->graph->num_nodes, pred[i]->data());
+            //std::cout << a_t<<std::endl;
             env_list[i]->step(a_t);            
         }
     }

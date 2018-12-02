@@ -8,8 +8,8 @@
 std::vector< std::shared_ptr<Graph> > NStepReplayMem::graphs;
 std::vector<int> NStepReplayMem::actions;
 std::vector<double> NStepReplayMem::rewards;
-std::vector< std::vector<int> > NStepReplayMem::states;
-std::vector< std::vector<int> > NStepReplayMem::s_primes;
+std::vector<IState> NStepReplayMem::states;
+std::vector<IState> NStepReplayMem::s_primes;
 std::vector<bool> NStepReplayMem::terminals;
 int NStepReplayMem::current;
 int NStepReplayMem::count;
@@ -38,10 +38,10 @@ void NStepReplayMem::Clear()
 }
 
 void NStepReplayMem::Add(std::shared_ptr<Graph> g, 
-                        std::vector<int>& s_t,
+                        IState& s_t,
                         int a_t, 
                         double r_t,
-                        std::vector<int>& s_prime,
+                        IState& s_prime,
                         bool terminal)
 {
     graphs[current] = g;
@@ -60,21 +60,27 @@ void NStepReplayMem::Add(IEnv* env)
     assert(env->isTerminal());
     int num_steps = env->state_seq.size();
     assert(num_steps);
+    assert(num_steps+1 == (int)env->action_list.size());
+    assert(num_steps == (int)env->sum_rewards.size());
 
     env->sum_rewards[num_steps - 1] = env->reward_seq[num_steps - 1];
     for (int i = num_steps - 1; i >= 0; --i)
+    {
         if (i < num_steps - 1)
             env->sum_rewards[i] = env->sum_rewards[i + 1] + env->reward_seq[i];
+    }
 
     for (int i = 0; i < num_steps; ++i)
     {
         bool term_t = false;
         double cur_r;
-        std::vector<int>* s_prime; 
+        IState* s_prime; 
         if (i + cfg::n_step >= num_steps)
         {
             cur_r = env->sum_rewards[i];
-            s_prime = &(env->action_list);
+            //s_prime->action_list = env->action_list;
+            //s_prime->demands = env->demands;
+            s_prime = &(env->state_seq[num_steps-1]);
             term_t = true;
         } else {
             cur_r = env->sum_rewards[i] - env->sum_rewards[i + cfg::n_step];
@@ -99,10 +105,15 @@ void NStepReplayMem::Sampling(int batch_size, ReplaySample& result)
     {
         int idx = dist(generator) % count;
         result.g_list[i] = graphs[idx];
-        result.list_st[i] = &(states[idx]);
         result.list_at[i] = actions[idx];
         result.list_rt[i] = rewards[idx];
-        result.list_s_primes[i] = &(s_primes[idx]);
         result.list_term[i] = terminals[idx];
+        //result.list_st[i] = &(states[idx]);
+        //result.list_s_primes[i] = &(s_primes[idx]);
+        auto st = std::make_shared<IState>(states[idx]);
+        result.list_st[i] = st;
+        auto s_prime = std::make_shared<IState>(s_primes[idx]);
+        result.list_s_primes[i] = s_prime;
+
     }
 }

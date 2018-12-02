@@ -11,10 +11,10 @@ class Graph
 public:
     Graph();
 
-    Graph(const int _num_nodes, const double* _coor_x, const double* _coor_y);
+    Graph(const int _num_nodes, const double* _coor_x, const double* _coor_y, const double* _demands);
     int num_nodes;
     int num_edges;
-    std::vector< double > coor_x, coor_y;
+    std::vector< double > coor_x, coor_y, demands;//depot is at position 0
     std::vector< std::vector< double > > dist;
 
     std::vector< std::set<int> > adj_set;

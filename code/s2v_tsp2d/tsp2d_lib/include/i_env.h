@@ -6,6 +6,29 @@
 
 #include "graph.h"
 
+class IState
+{
+public:
+    IState(){};
+    IState(const std::vector<int>& action_list,const std::vector<double>& demands)
+    {
+        this->action_list = action_list;
+        this->demands = demands;
+    }
+    IState(const IState& istate)
+    {
+        this->action_list = istate.action_list;
+        this->demands = istate.demands;
+    }
+    void set(const std::vector<int>& action_list,const std::vector<double>& demands)
+    {
+        this->action_list = action_list;
+        this->demands = demands;
+    }
+    std::vector<int> action_list;
+    std::vector<double> demands;
+};
+
 class IEnv
 {
 public:
@@ -23,7 +46,8 @@ public:
     double norm;
     std::shared_ptr<Graph> graph;
     
-    std::vector< std::vector<int> > state_seq;
+    std::vector<IState> state_seq;
+    std::vector<double> demands;
     std::vector<int> act_seq, action_list;
     std::vector<double> reward_seq, sum_rewards;
 };
