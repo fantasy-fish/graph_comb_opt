@@ -94,8 +94,8 @@ if __name__ == '__main__':
 
     # startup    
     for i in range(10):
-        #api.lib.PlayGame(100, ctypes.c_double(1.0))
-        api.lib.PlayGame(1, ctypes.c_double(1.0))
+        api.lib.PlayGame(100, ctypes.c_double(1.0))
+        #api.lib.PlayGame(1, ctypes.c_double(1.0))
         
     api.TakeSnapshot()
 
