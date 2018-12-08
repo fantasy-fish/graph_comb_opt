@@ -31,6 +31,7 @@ void Tsp2dEnv::s0(std::shared_ptr<Graph> _g)
 
 double Tsp2dEnv::step(int a)
 {
+
     if (a>0)
     {
         assert(graph);
@@ -42,6 +43,8 @@ double Tsp2dEnv::step(int a)
     }
     else
     {
+        assert(demands[0]!=1);
+        assert(action_list[action_list.size()-1]!=0);
         assert(a==0);
         demands[0] = 1;
     }
@@ -62,8 +65,10 @@ int Tsp2dEnv::randomAction()
 {
     assert(graph);
     avail_list.clear();
-    if(demands[0]!=1)
-        avail_list.push_back(0);
+
+    //if(demands[0]!=1)
+    //    avail_list.push_back(0);
+
     if(demands[0]>0)
     {
         for(int i = 1; i < graph->num_nodes; ++i)
@@ -75,9 +80,20 @@ int Tsp2dEnv::randomAction()
         }
     }
 
+    if(avail_list.size()==0 && demands[0]!=1)
+        avail_list.push_back(0);
+
+    //std::cout<<"avail_list:";
+    //for(int i=0;i<(int)avail_list.size();i++)
+    //    std::cout<<avail_list[i]<<',';
+    //std::cout<<std::endl;
+
     assert(avail_list.size());
     int idx = rand() % avail_list.size();
-    //std::cout<<"random action: "<<idx<<','<<avail_list.size()<<std::endl;
+
+    if(demands[0]==1)
+        assert(avail_list[idx]!=0);
+
     return avail_list[idx];
 }
 
@@ -99,7 +115,7 @@ double Tsp2dEnv::add_node(int new_node)
     }
     else
     {
-        //insert the node after the last refill to minimize the tatal cost
+        //insert at a position that gives the lowest increase
         double cur_dist = 10000000.0;
         int pos = -1;
         size_t last_refill_pos;
@@ -133,6 +149,12 @@ double Tsp2dEnv::add_node(int new_node)
         action_list.insert(action_list.begin() + pos + 1, new_node);
         partial_set.insert(new_node);
 
+        // std::cout<<"action:";
+        // for(int i=0;i<(int)action_list.size();i++)
+        //     std::cout<<action_list[i]<<',';
+        // std::cout<<std::endl;
+        // std::cout<<"# of visited nodes:"<<partial_set.size()<<std::endl;
+        // std::cout<<"Remaining capacity:"<<demands[0]<<std::endl;
         return sign * cur_dist / norm;
     }
 }

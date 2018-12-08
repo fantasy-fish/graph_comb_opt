@@ -64,6 +64,8 @@ void NStepReplayMem::Add(IEnv* env)
     assert(num_steps == (int)env->sum_rewards.size());
 
     env->sum_rewards[num_steps - 1] = env->reward_seq[num_steps - 1];
+    // /std::cout<<"n-step lookahead:"<<cfg::n_step<<std::endl;
+
     for (int i = num_steps - 1; i >= 0; --i)
     {
         if (i < num_steps - 1)

@@ -53,6 +53,7 @@ def PrepareGraphs(isValid):
     else:
         n_graphs = 10000
         prefix = 'train'
+
     n_nodes = int(opt['max_n'])-1
     filename = '%s/%s/vrp%d.pkl' % (opt['data_root'], prefix, n_nodes )
 
@@ -93,7 +94,9 @@ if __name__ == '__main__':
 
     # startup    
     for i in range(10):
-        api.lib.PlayGame(100, ctypes.c_double(1.0))
+        #api.lib.PlayGame(100, ctypes.c_double(1.0))
+        api.lib.PlayGame(1, ctypes.c_double(1.0))
+        
     api.TakeSnapshot()
 
     eps_start = 1.0
@@ -109,10 +112,11 @@ if __name__ == '__main__':
         #print iter,eps
         if iter % 10 == 0:
             api.lib.PlayGame(10, ctypes.c_double(eps))
+            #api.lib.PlayGame(1, ctypes.c_double(eps))
 
         if iter % 100 == 0:
             frac = 0.0
-            #print iter,frac,n_valid
+            #n_valid = 1
             for idx in range(n_valid):
                 frac += sign*api.lib.Test(idx)
             print 'iter', iter, 'lr', lr, 'eps', eps, 'average tour length: ', frac / n_valid
