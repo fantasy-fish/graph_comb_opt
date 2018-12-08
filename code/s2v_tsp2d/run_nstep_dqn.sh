@@ -35,7 +35,7 @@ knn=10
 
 min_n=15
 #actual number of nodes(+depot)
-#10+1=11
+#20+1=21
 max_n=11
 
 num_env=1

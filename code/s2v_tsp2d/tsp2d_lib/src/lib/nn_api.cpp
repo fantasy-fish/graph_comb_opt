@@ -47,14 +47,19 @@ void Predict(std::vector< std::shared_ptr<Graph> >& g_list, std::vector< std::sh
             }
             //masking            
             std::vector<double> cur_demands(states[j]->demands);
-            if(cur_demands[0]==1)
-                cur_pred[0] = -inf;
+            //if(cur_demands[0]==1)
+            //    cur_pred[0] = -inf;
+            int n_avail=0;
             for (int k = 1; k < g->num_nodes; ++k)
             {
                 if (cur_demands[k]==0 || cur_demands[k]>cur_demands[0])
                     cur_pred[k] = -inf;
+                else
+                    n_avail++;
             }
-            
+            assert(cur_demands[0]!=1 || n_avail>0);
+            if(n_avail>0 || cur_demands[0]==1)
+                cur_pred[0] = -inf;
         }
         ASSERT(pos == (int)output.shape.Count(), "idxes not match");
     }   
