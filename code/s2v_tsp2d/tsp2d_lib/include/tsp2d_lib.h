@@ -20,7 +20,7 @@ extern "C" double Fit(const double lr);
 
 extern "C" double FitWithFarthest(const double lr);
 
-extern "C" double Test(const int gid);
+extern "C" double Test(const int gid,const bool print);
 
 extern "C" int SetSign(int s);
 

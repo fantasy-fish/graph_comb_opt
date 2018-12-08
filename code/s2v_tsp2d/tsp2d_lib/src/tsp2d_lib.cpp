@@ -214,7 +214,7 @@ double FitWithFarthest(const double lr)
 }
 */
 
-double Test(const int gid)
+double Test(const int gid, const bool print)
 {
     std::vector< std::shared_ptr<Graph> > g_list(1);
     std::vector< std::shared_ptr<IState> > states(1);
@@ -228,7 +228,8 @@ double Test(const int gid)
 
     double v = 0;
     int new_action;
-    //std::cout<<"test---------------------"<<std::endl;
+    if(gid==0 && print)
+        std::cout<<"test---------------------"<<std::endl;
     while (!test_env->isTerminal())
     {
         states[0]->demands = test_env->demands;
@@ -243,11 +244,15 @@ double Test(const int gid)
         double cur_r = test_env->step(new_action) * cfg::max_n;
         v += cur_r;
 
-        //std::cout<<"action:";
-        //for(int i=0;i<(int)test_env->action_list.size();i++)
-        //    std::cout<<test_env->action_list[i]<<',';
-        //std::cout<<std::endl;
-        //std::cout<<"Remaining capacity:"<<test_env->demands[0]<<std::endl;
+        if(gid==0 && print)
+        {
+            std::cout<<"action:";
+            for(int i=0;i<(int)test_env->action_list.size();i++)
+                std::cout<<test_env->action_list[i]<<',';
+            std::cout<<std::endl;
+            std::cout<<"Remaining capacity:"<<test_env->demands[0]<<std::endl;
+        }
+        //---------------------------------------
         //std::cout<<"reward at the current step:"<<cur_r<<std::endl;
         //caulating the partial tour length
         //double tour=0;
@@ -287,7 +292,7 @@ double GetSol(const int gid, int* sol)
     }
     
     sol[0] = test_env->graph->num_nodes;
-    for (int i = 0; i < test_env->graph->num_nodes; ++i)
+    for (int i = 0; i < (int)test_env->action_list.size(); ++i)
         sol[i + 1] = test_env->action_list[i];    
     return v;
 }

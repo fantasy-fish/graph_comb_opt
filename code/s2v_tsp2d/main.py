@@ -65,7 +65,7 @@ def PrepareGraphs(isValid):
             assert n_nodes == len(_demands)
             coors = dict(zip(range(n_nodes),_coors))
             _demands = [1.0*d/capacity for d in _demands]
-            demands = dict(zip(range(n_nodes),_demands))
+            demands = dict(zip(range(n_nodes),_demands))  
             g = nx.Graph()
             g.add_nodes_from(range(n_nodes))
             nx.set_node_attributes(g, 'pos', coors)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     PrepareGraphs(isValid=True)
     PrepareGraphs(isValid=False)
     print "PrepareGraphs complete"
-
+    
     # startup    
     for i in range(10):
         api.lib.PlayGame(100, ctypes.c_double(1.0))
@@ -109,7 +109,12 @@ if __name__ == '__main__':
     lr = float(opt['learning_rate'])
     for iter in range(int(opt['max_iter'])):
         eps = eps_end + max(0., (eps_start - eps_end) * (eps_step - iter) / eps_step)
-        #print iter,eps
+        
+        if iter % 1000 == 0:
+            doprint = True
+        else:
+            doprint = False
+            
         if iter % 10 == 0:
             api.lib.PlayGame(10, ctypes.c_double(eps))
             #api.lib.PlayGame(1, ctypes.c_double(eps))
@@ -118,7 +123,7 @@ if __name__ == '__main__':
             frac = 0.0
             #n_valid = 1
             for idx in range(n_valid):
-                frac += sign*api.lib.Test(idx)
+                frac += sign*api.lib.Test(idx,doprint)
             print 'iter', iter, 'lr', lr, 'eps', eps, 'average tour length: ', frac / n_valid
             sys.stdout.flush()
             model_path = '%s/nrange_%d_%d_iter_%d.model' % (opt['save_dir'], int(opt['min_n']), int(opt['max_n']), iter)
