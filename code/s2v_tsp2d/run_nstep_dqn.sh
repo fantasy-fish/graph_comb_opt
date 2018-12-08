@@ -36,7 +36,7 @@ knn=10
 min_n=15
 #actual number of nodes(+depot)
 #20+1=21
-max_n=11
+max_n=21
 
 num_env=1
 mem_size=50000

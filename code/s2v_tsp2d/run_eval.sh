@@ -1,11 +1,11 @@
 #!/bin/bash
 
-g_type=clustered
+g_type=vrp
 
 result_root=results/dqn-$g_type
 
 test_min_n=15
-test_max_n=20
+test_max_n=101
 
 # max belief propagation iteration
 max_bp_iter=4
@@ -37,7 +37,7 @@ n_step=1
 knn=10
 
 min_n=15
-max_n=20
+max_n=21
 
 num_env=1
 mem_size=50000
@@ -51,7 +51,7 @@ python evaluate.py \
     -net_type $net_type \
     -dev_id $dev_id \
     -n_step $n_step \
-    -data_root ../../data/tsp2d \
+    -data_root ../../data/vrp \
     -decay $decay \
     -knn $knn \
     -test_min_n $test_min_n \

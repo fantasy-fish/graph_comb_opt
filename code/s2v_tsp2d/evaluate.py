@@ -7,6 +7,7 @@ import os
 import sys
 import time
 from tqdm import tqdm
+import pickle
 
 sys.path.append( '%s/tsp2d_lib' % os.path.dirname(os.path.realpath(__file__)) )
 from tsp2d_lib import Tsp2dLib
@@ -32,28 +33,24 @@ def find_model_file(opt):
     return '%s/nrange_%d_%d_iter_%d.model' % (opt['save_dir'], min_n, max_n, best_it)
 
 def TestSet():
-    folder = '%s/test_tsp2d/tsp_min-n=%s_max-n=%s_num-graph=1000_type=%s' % (opt['data_root'], opt['test_min_n'], opt['test_max_n'], opt['g_type'])
+    prefix = 'validation'
+    n_nodes = int(opt['test_max_n'])-1
+    filename = '%s/%s/vrp%d.pkl' % (opt['data_root'], prefix, n_nodes )
 
-    with open('%s/paths.txt' % folder, 'r') as f:
-        for line in f:
-            fname = '%s/%s' % (folder, line.split('/')[-1].strip())
-            coors = {}
-            in_sec = False
-            n_nodes = -1
-            with open(fname, 'r') as f_tsp:
-                for l in f_tsp:
-                    if 'DIMENSION' in l:
-                        n_nodes = int(l.split(' ')[-1].strip())
-                    if in_sec:
-                        idx, x, y = [int(w.strip()) for w in l.split(' ')]
-                        coors[idx - 1] = [float(x) / 1000000.0, float(y) / 1000000.0]
-                        assert len(coors) == idx
-                    elif 'NODE_COORD_SECTION' in l:
-                        in_sec = True
-            assert len(coors) == n_nodes
+    with open(filename, 'r') as f:
+        dataset = pickle.load(f)
+        for data in dataset:
+            depot,_coors,_demands,capacity = data
+            n_nodes = len(_coors)
+            assert n_nodes == len(_demands)
+            coors = dict(zip(range(n_nodes),_coors))
+            _demands = [1.0*d/capacity for d in _demands]
+            demands = dict(zip(range(n_nodes),_demands))  
             g = nx.Graph()
             g.add_nodes_from(range(n_nodes))
             nx.set_node_attributes(g, 'pos', coors)
+            nx.set_node_attributes(g, 'demand', demands)
+            g.graph['depot'] = depot
             yield g            
 
 if __name__ == '__main__':
@@ -72,7 +69,8 @@ if __name__ == '__main__':
     test_name = '-'.join([opt['g_type'], opt['test_min_n'], opt['test_max_n']])
     result_file = '%s/test-%s-gnn-%s-%s.csv' % (opt['save_dir'], test_name, opt['min_n'], opt['max_n'])
 
-    n_test = 1000
+    #n_test = 1000
+    n_test = 100
     frac = 0.0
     with open(result_file, 'w') as f_out:
         print 'testing'
