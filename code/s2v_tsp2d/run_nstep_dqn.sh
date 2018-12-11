@@ -17,7 +17,7 @@ dev_id=1
 batch_size=128
 
 net_type=QNet
-decay=0.1
+decay=0.99
 
 # set reg_hidden=0 to make a linear regression
 reg_hidden=32
@@ -36,7 +36,7 @@ knn=10
 min_n=15
 #actual number of nodes(+depot)
 #20+1=21
-max_n=21
+max_n=11
 
 num_env=1
 mem_size=50000

@@ -91,13 +91,16 @@ if __name__ == '__main__':
     PrepareGraphs(isValid=True)
     PrepareGraphs(isValid=False)
     print "PrepareGraphs complete"
-    
+
     # startup    
     for i in range(10):
         api.lib.PlayGame(100, ctypes.c_double(1.0))
         #api.lib.PlayGame(1, ctypes.c_double(1.0))
+        #break
         
     api.TakeSnapshot()
+
+    #exit()
 
     eps_start = 1.0
     eps_end = 0.05

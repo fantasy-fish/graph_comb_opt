@@ -63,7 +63,7 @@ class Tsp2dLib(object):
         self.lib.SaveModel(p)
 
     def GetSol(self, gid, maxn):
-        sol = (ctypes.c_int * (maxn + 10))()
+        sol = (ctypes.c_int * (maxn + 20))()
         val = self.lib.GetSol(gid, sol)
         return val, sol
 
