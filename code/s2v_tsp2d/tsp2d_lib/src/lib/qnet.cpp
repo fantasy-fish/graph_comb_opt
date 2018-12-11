@@ -185,10 +185,18 @@ void QNet::SetupGraphInput(std::vector<int>& idxes,
         for (size_t j = 0; j < d.size(); ++j)
         {
             node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 2] = d[j];//demands
+            //int n_avail = 0;
             if(d[0]==1)
                 node_feat.data->ptr[cfg::node_dim * (node_cnt + 0) + 4] = 0;
             if(j>=1 && (d[j]>d[0]||d[j]==0))
+            {
                 node_feat.data->ptr[cfg::node_dim * (node_cnt + j) + 4] = 0;
+                //n_avail++;
+            }
+            //if(n_avail>0 || d[0]==1)
+            //    node_feat.data->ptr[cfg::node_dim * (node_cnt + 0) + 4] = 0;
+            //else
+            //    node_feat.data->ptr[cfg::node_dim * (node_cnt + 0) + 4] = 1;
         }
             
         for (int j = 0; j < g->num_nodes; ++j)

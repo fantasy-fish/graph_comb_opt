@@ -90,6 +90,7 @@ int Tsp2dEnv::randomAction()
 
     assert(avail_list.size());
     int idx = rand() % avail_list.size();
+    //std::cout<<"Random number:"<<idx<<std::endl;
 
     if(demands[0]==1)
         assert(avail_list[idx]!=0);

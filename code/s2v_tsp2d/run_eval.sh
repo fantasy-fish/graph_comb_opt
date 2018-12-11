@@ -37,7 +37,7 @@ n_step=1
 knn=10
 
 min_n=15
-max_n=21
+max_n=11
 
 num_env=1
 mem_size=50000
