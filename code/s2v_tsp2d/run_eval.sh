@@ -4,14 +4,14 @@ g_type=vrp
 
 result_root=results/dqn-$g_type
 
-test_min_n=15
-test_max_n=101
+test_min_n=251
+test_max_n=251
 
 # max belief propagation iteration
-max_bp_iter=4
+max_bp_iter=8
 
 # embedding size
-embed_dim=64
+embed_dim=1024
 
 # gpu card id
 dev_id=0
@@ -32,12 +32,12 @@ learning_rate=0.0001
 w_scale=0.01
 
 # nstep
-n_step=1
+n_step=20
 
 knn=10
 
-min_n=15
-max_n=11
+min_n=101
+max_n=101
 
 num_env=1
 mem_size=50000

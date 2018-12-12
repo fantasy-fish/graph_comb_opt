@@ -5,41 +5,41 @@ g_type=vrp
 result_root=results/dqn-$g_type
 
 # max belief propagation iteration
-max_bp_iter=4
+max_bp_iter=8
 
 # embedding size
-embed_dim=64
+embed_dim=1024
 
 # gpu card id
 dev_id=1
 
 # max batch size for training/testing
-batch_size=128
+batch_size=64
 
 net_type=QNet
-decay=0.99
+decay=0.1
 
 # set reg_hidden=0 to make a linear regression
 reg_hidden=32
 
 # learning rate
-learning_rate=0.0001
+learning_rate=0.001
 
 # init weights with rand normal(0, w_scale)
 w_scale=0.01
 
 # nstep
-n_step=1
+n_step=20
 
 knn=10
 
-min_n=15
+min_n=101
 #actual number of nodes(+depot)
 #20+1=21
-max_n=11
+max_n=101
 
 num_env=1
-mem_size=50000
+mem_size=100000
 
 max_iter=200000
 
