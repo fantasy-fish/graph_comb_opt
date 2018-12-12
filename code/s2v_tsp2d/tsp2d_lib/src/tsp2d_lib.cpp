@@ -291,9 +291,11 @@ double GetSol(const int gid, int* sol)
         v += test_env->step(new_action) * cfg::max_n;
     }
     
-    sol[0] = test_env->graph->num_nodes;
+    sol[0] = (int)test_env->action_list.size();
     for (int i = 0; i < (int)test_env->action_list.size(); ++i)
-        sol[i + 1] = test_env->action_list[i];    
+        sol[i + 1] = test_env->action_list[i];
+    
+
     return v;
 }
 
