@@ -15,6 +15,7 @@ numpy = "*"
 networkx = "*"
 ipython = "*"
 tqdm = "*"
+matplotlib = "*"
 
 
 [requires]
