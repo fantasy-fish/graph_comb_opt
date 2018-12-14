@@ -14,11 +14,12 @@ from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
 
-assert len(sys.argv) > 1, "Missing test file"
+assert len(sys.argv) > 1, "Missing test ID"
 pp = pprint.PrettyPrinter(indent=4)
 
-TESTFILE = sys.argv[1]
-VALIDSET = "../data/vrp/validation/vrp100.pkl"
+ID = sys.argv[1]
+TESTFILE = "test-vrp-"+str(int(ID)+1)+"-"+str(int(ID)+1)+"-gnn-51-51.csv"
+VALIDSET = "../data/vrp/validation/vrp"+str(ID)+".pkl"
 
 
 # Gives us the rainbow color
