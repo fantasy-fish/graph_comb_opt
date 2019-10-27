@@ -1,5 +1,6 @@
 # graph_comb_opt 
 Implementation of "Learning Combinatorial Optimization Algorithms over Graphs" (https://arxiv.org/abs/1704.01665)
+Update it to the CVRP
 
 Step-by-step demo of MVC solution found by different methods.
 From left to right: (1) S2V-DQN (our method), (2) node-degree heuristic, (3) edge-degree heuristic
